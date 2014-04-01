@@ -102,6 +102,8 @@ def main():
 		help = "number of seconds between checks (default: 30)")
 	op.add_option('-r', '--retry', dest = 'retry', type = 'int', default = 10,
 		help = "number of times to retry (with increasing delay) on HTTP errors (excluding 404)")
+	op.add_option('', '--retry-increment', dest = 'retry_increment', type = 'int', default = 120,
+		help = "number of seconds to add for each failed check (default: 120)")
 	op.add_option('-f', '--force', dest = 'force', default = False, action = 'store_true',
 		help = "force re-download")
 	op.add_option('', '--include-ext', dest = 'include_extensions', default = '',
@@ -231,7 +233,7 @@ def run_downloader(downloader, opts):
 			if checkthread.retry == 0:
 				interval = opts.interval
 			else:
-				interval = 120 * checkthread.retry
+				interval = (opts.retry_increment * checkthread.retry)
 
 			while not terminate:
 				now = time.time()

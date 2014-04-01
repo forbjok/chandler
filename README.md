@@ -29,7 +29,7 @@ $ pip install beautifulsoup4
 ## Getting Started
 First, make sure everything listed under requirements is installed and working.
 
-* Clone the repository: `git clone https://bitbucket.org/forbjok/chandler.git`
+* Clone the repository: `git clone https://github.com/forbjok/chandler.git`
 * Change into the repository's working directory.
 
 To simply download a thread:

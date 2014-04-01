@@ -98,8 +98,8 @@ def main():
 		help = "don't create a subfolder for each thread in the destination folder")
 	op.add_option('-c', '--continuous', dest = 'continuous', default = False, action = 'store_true',
 		help = "continuously re-download until 404 (will be ignored if multiple threads are specified)")
-	op.add_option('-i', '--interval', dest = 'interval', type = 'float', default = 10,
-		help = "interval between redownloads (in seconds)")
+	op.add_option('-i', '--interval', dest = 'interval', type = 'float', default = 30,
+		help = "number of seconds between checks (default: 30)")
 	op.add_option('-r', '--retry', dest = 'retry', type = 'int', default = 10,
 		help = "number of times to retry (with increasing delay) on HTTP errors (excluding 404)")
 	op.add_option('-f', '--force', dest = 'force', default = False, action = 'store_true',

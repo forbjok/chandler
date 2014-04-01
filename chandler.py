@@ -100,6 +100,10 @@ def main():
 		help = "continuously re-download until 404 (will be ignored if multiple threads are specified)")
 	op.add_option('-i', '--interval', dest = 'interval', type = 'float', default = 30,
 		help = "number of seconds between checks (default: 30)")
+	op.add_option('', '--auto-increment', dest = 'auto_increment', type = 'float', default = 5,
+		help = "number of seconds to add per auto-increment (default: 5) (0 = disable)")
+	op.add_option('', '--max-auto-increment', dest = 'max_auto_increment', type = 'float', default = 90,
+		help = "maximum increase for auto-increment (default: 90)")
 	op.add_option('-r', '--retry', dest = 'retry', type = 'int', default = 10,
 		help = "number of times to retry (with increasing delay) on HTTP errors (excluding 404)")
 	op.add_option('', '--retry-increment', dest = 'retry_increment', type = 'int', default = 120,
@@ -190,11 +194,13 @@ def run_downloader(downloader, opts):
 
 		try:
 			downloader.download(force = checkthread.force)
+			checkthread.checks_since_last_update = 0
 		except CancelException:
 			output("Download cancelled. Thread has not been saved.")
 			return False
 		except ThreadNotModified as e:
 			output(e)
+			checkthread.checks_since_last_update += 1
 		except ThreadNotFound as e:
 			output(e)
 			return False
@@ -222,6 +228,7 @@ def run_downloader(downloader, opts):
 	checkthread.force = opts.force
 	checkthread.retry = 0
 	checkthread.last_check = None
+	checkthread.checks_since_last_update = 0
 
 	if opts.continuous:
 		# Loop until a download attempt fails (or is canceled)
@@ -231,7 +238,7 @@ def run_downloader(downloader, opts):
 				break
 
 			if checkthread.retry == 0:
-				interval = opts.interval
+				interval = opts.interval + min(opts.auto_increment * checkthread.checks_since_last_update, opts.max_auto_increment)
 			else:
 				interval = (opts.retry_increment * checkthread.retry)
 

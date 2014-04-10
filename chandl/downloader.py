@@ -56,7 +56,7 @@ class ThreadDownloader(object):
 			re.compile('img.src'),
 		]
 
-		self.download_extensions = set(['.ico', '.css', '.png', '.jpg', '.gif'])
+		self.download_extensions = set(['.ico', '.css', '.png', '.jpg', '.gif', '.webm'])
 
 		self.board_type = None
 		self.merge = False

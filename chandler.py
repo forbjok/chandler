@@ -14,20 +14,19 @@ from chandl import *
 logger = logging.getLogger(__name__)
 
 terminate = False
+tw, th = None, None
 
-def signal_handler(signum, frame):
+def sigint_handler(signum, frame):
 	global terminate
 	terminate = True
-
-signal.signal(signal.SIGINT, signal_handler)
-
-def output(text):
-	clear_line()
-	print text
 
 def cancel_callback():
 	global terminate
 	return terminate
+
+def output(text):
+	clear_line()
+	print text
 
 def clear_line():
 	if report.prev_length > 0:
@@ -37,6 +36,9 @@ def clear_line():
 		report.prev_length = 0
 
 def report(text):
+	# If text is longer than terminal width, truncate it
+	text = text[:tw]
+
 	if len(text) < report.prev_length:
 		clear_line()
 
@@ -141,6 +143,28 @@ def main():
 
 	# Initialize logging
 	logging.basicConfig(level = level)
+
+	signal.signal(signal.SIGINT, sigint_handler)
+
+	try:
+		# Attempt to set up detection of terminal size
+		import fcntl, termios, struct
+
+		def get_terminal_size():
+			h, w, hp, wp = struct.unpack('HHHH', fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0)))
+			return w, h
+
+		def sigwinch_handler(signum, frame):
+			global tw, th
+			tw, th = get_terminal_size()
+
+		tw, th = get_terminal_size()
+		signal.signal(signal.SIGWINCH, sigwinch_handler)
+	except:
+		# If terminal size detection fails, log but otherwise ignore it
+		# This will generally be caused by running on an operating system
+		# on which it is not supported, such as Microsoft Windows
+		logger.info("Terminal resize not supported.")
 
 	if opts.continuous and len(args) > 1:
 		output("More than one URL specified. Continuous flag will be ignored.")

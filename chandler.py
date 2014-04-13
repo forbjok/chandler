@@ -122,6 +122,8 @@ def main():
 		help = "specify board type - should only be used for unsupported sites you know to be compatible with one of the existing board types (ie. any site using stock Tinyboard)")
 	op.add_option('', '--ignore-pid', dest = 'ignore_pid', default = False, action = 'store_true',
 		help = "ignore existing PID file. DO NOT USE THIS unless the PID checking somehow fails even though no process is running (ie. corrupt/invalid PID file)")
+	op.add_option('', '--progress', dest = 'progress', default = 'on',
+		help = "specify progress display mode (default: on)")
 	op.add_option('-v', '--verbose', dest = 'verbose', default = False, action = 'store_true',
 		help = "display more information on console")
 	op.add_option('', '--debug', dest = 'debug', default = False, action = 'store_true',
@@ -176,8 +178,26 @@ def main():
 		if terminate:
 			break
 
+		if opts.progress == 'on':
+			rotator = "-\|/"
+			def progress(prg, currentfile, filestotal, url):
+				if prg < 0:
+					prgtext = rotator[progress.rot]
+					progress.rot += 1
+
+					if progress.rot >= len(rotator):
+						progress.rot = 0
+				else:
+					prgtext = "{0: 3.0f}%".format(prg)
+
+				report("[{0:s}] Downloading file {1:d} of {2:d} [{3:s}]".format(prgtext, currentfile, filestotal, url))
+
+			progress.rot = 0
+		else:
+			progress = None
+
 		# Create downloader instance
-		downloader = ThreadDownloader(url, None, None, output_callback = output, report_callback = report, cancel_callback = cancel_callback)
+		downloader = ThreadDownloader(url, None, None, output_callback = output, progress_callback = progress, cancel_callback = cancel_callback)
 
 		# Set board type if specified
 		if opts.board_type != None:

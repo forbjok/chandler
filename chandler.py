@@ -154,11 +154,14 @@ def main():
 			h, w, hp, wp = struct.unpack('HHHH', fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0)))
 			return w, h
 
-		def sigwinch_handler(signum, frame):
+		def refresh_terminal_size():
 			global tw, th
 			tw, th = get_terminal_size()
 
-		tw, th = get_terminal_size()
+		def sigwinch_handler(signum, frame):
+			refresh_terminal_size()
+
+		refresh_terminal_size()
 		signal.signal(signal.SIGWINCH, sigwinch_handler)
 	except:
 		# If terminal size detection fails, log but otherwise ignore it

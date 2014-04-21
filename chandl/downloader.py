@@ -25,11 +25,13 @@ RE_LINK_IS_FILE = re.compile(r'/.*?\.[^/]')
 
 class ThreadDownloader(object):
 	# URL patterns
-	CUP_4CHAN = r'(?:https?://)?([\w\.]+)/(\w+)/res/(\d+)'
+	CUP_4CHAN = r'(?:https?://)?([\w\.]+)/(\w+)/thread/(\d+)'
+	CUP_OLD_4CHAN = r'(?:https?://)?([\w\.]+)/(\w+)/res/(\d+)'
 
 	# A list of different splitters to try when attempting to get board and thread info from the URL
 	CHAN_URL_PATTERNS = [
-		CUP_4CHAN, # 4chan, mlpchan
+		CUP_4CHAN, # 4chan
+		CUP_OLD_4CHAN, # mlpchan
 		r'(?:https?://)?([\w\.]+)/(\w+)/thread/S?(\d+)', # archive.heinessen.com
 		r'(?:https?://)?([\w\.]+)/chan/(\w+)/res/(\d+)', # Ponychan
 		r'(?:https?://)?([\w\.]+)/(\w+)/(\d+)', # ylilauta
@@ -70,7 +72,7 @@ class ThreadDownloader(object):
 			m = re.match(self.CUP_4CHAN, self.document_url)
 		elif up.netloc == 'mlpchan.net':
 			self.set_board_type('mlpchan')
-			m = re.match(self.CUP_4CHAN, self.document_url)
+			m = re.match(self.CUP_OLD_4CHAN, self.document_url)
 		else:
 			# Loop through the patterns until we get a match (or run out of patterns to try)
 			for p in self.CHAN_URL_PATTERNS:

@@ -38,15 +38,15 @@ class ThreadDownloader(object):
 		r'(?:https?://)?([^/]+)(?:/.+?)?/(\w+)/res/(\d+)',
 	]
 
-	def __init__(self, document_url, save_dir, save_filename, output_callback = None, report_callback = None, cancel_callback = None):
+	def __init__(self, document_url, save_dir, save_filename, output_callback = None, progress_callback = None, cancel_callback = None):
 		self.document_url = document_url
 		self.document_url_parseresult = urlparse(self.document_url)
 
 		if output_callback != None:
 			self._output = output_callback
 
-		if report_callback != None:
-			self._report = report_callback
+		if progress_callback != None:
+			self._progress = progress_callback
 
 		if cancel_callback != None:
 			self._iscancelling = cancel_callback
@@ -133,7 +133,7 @@ class ThreadDownloader(object):
 	def _output(self, text):
 		pass
 
-	def _report(self, text):
+	def _progress(self, prg, currentfile, filestotal, url):
 		pass
 
 	def _iscancelling(self):
@@ -346,20 +346,13 @@ class ThreadDownloader(object):
 			currentfile = 0
 			filestotal = len(self.download_queue)
 
-			rotator = "-\|/"
 			def progress(url, read, size):
 				if size > 0:
-					prg = "{0: 3.0f}%".format((float(read) / size) * 100)
+					prg = (float(read) / size) * 100
 				else:
-					prg = rotator[progress.rot]
-					progress.rot += 1
+					prg = -1
 
-					if progress.rot >= len(rotator):
-						progress.rot = 0
-
-				self._report("[{0:s}] Downloading file {1:d} of {2:d} [{3:s}]".format(prg, currentfile, filestotal, url))
-
-			progress.rot = 0
+				self._progress(prg, currentfile, filestotal, url)
 
 			for url, saveto in self.download_queue:
 				if self._iscancelling():

@@ -34,24 +34,23 @@ First, make sure everything listed under requirements is installed and working.
 
 To simply download a thread:
 ```
-$ ./chandler.py -d threads http://boards.4chan.org/BOARD/res/THREAD
+$ ./chandler.py -d threads http://boards.4chan.org/BOARD/thread/THREAD
 ```
 ... where "threads" is the name of the directory to download to.
 Subdirectories will automatically be created per site, board and thread number.
 
 To download a thread and then continue to check it for updates every 60 seconds:
 ```
-$ ./chandler.py -d threads -c -i 60 http://boards.4chan.org/BOARD/res/THREAD
+$ ./chandler.py -d threads -c -i 60 http://boards.4chan.org/BOARD/thread/THREAD
 ```
 ... where `-c` means continuous, and `-i 60` specifies the interval between each check in seconds (in this case 60).
 
 To download multiple threads:
 ```
-$ ./chandler.py -d threads http://boards.4chan.org/BOARD/res/THREAD http://boards.4chan.org/BOARD/res/ANOTHER_THREAD
+$ ./chandler.py -d threads http://boards.4chan.org/BOARD/thread/THREAD http://boards.4chan.org/BOARD/thread/ANOTHER_THREAD
 ```
 This way, any number of threads can be specified for download.
 If multiple threads are specified, `-c` will be ignored.
 
 ## License
 This project is licensed under the terms of the [MIT license](http://opensource.org/licenses/MIT).
-

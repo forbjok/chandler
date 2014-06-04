@@ -251,7 +251,7 @@ def run_downloader(downloader, opts):
 		except ThreadNotFound as e:
 			output(e)
 			return False
-		except (ThreadHTTPError, ConnectionError) as e:
+		except (ThreadHTTPError, ConnectionError, IncompleteDownload) as e:
 			output(e)
 
 			if checkthread.retry < opts.retry:

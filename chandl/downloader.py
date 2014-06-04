@@ -438,7 +438,7 @@ def download_file(url, saveto, headers = None, progress_callback = None):
 						progress(url, read, size)
 
 			if read < size:
-				raise Exception("Download incomplete [{0:s}]".format(url))
+				raise IncompleteDownload("Download incomplete [{0:s}]".format(url))
 
 			if 'last-modified' in r.headers:
 				try:

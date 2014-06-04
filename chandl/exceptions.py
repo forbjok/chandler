@@ -21,3 +21,6 @@ class NoSaveDir(Exception):
 
 class CancelException(Exception):
 	pass
+
+class IncompleteDownload(Exception):
+	pass

@@ -233,7 +233,7 @@ def main():
 def run_downloader(downloader, opts):
 	global terminate
 
-	url = downloader.document_url
+	url = downloader.thread_url
 
 	# Define function for performing a download attempt
 	def checkthread():

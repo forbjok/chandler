@@ -229,13 +229,18 @@ def download_file(url, saveto, headers=None, progress_callback=None):
 				size = int(r.headers['content-length']) if 'content-length' in r.headers else -1
 
 				progress(url, read, size)
-				for chunk in r.iter_content(chunk_size = 1024):
-					if chunk:
-						f.write(chunk)
-						f.flush()
 
-						read += len(chunk)
-						progress(url, read, size)
+				try:
+					for chunk in r.iter_content(chunk_size = 1024):
+						if chunk:
+							f.write(chunk)
+							f.flush()
+
+							read += len(chunk)
+							progress(url, read, size)
+				except requests.RequestException as e:
+					logger.error("RequestException downloading [{0:s}]: {1:s}", url, str(e))
+					raise IncompleteDownload("Download incomplete [{0:s}]".format(url))
 
 			if read < size:
 				raise IncompleteDownload("Download incomplete [{0:s}]".format(url))

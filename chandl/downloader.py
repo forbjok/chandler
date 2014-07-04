@@ -182,7 +182,15 @@ class ThreadDownloader(object):
 				currentfile += 1
 
 				try:
-					download_file(url, saveto, progress_callback = progress)
+					try:
+						download_file(url, saveto, progress_callback = progress)
+					except ThreadHTTPError as e:
+						if e.code == 404:
+							# Skip non-existent files
+							self._output("[{0:s}] was not found. Skipped.".format(url))
+							continue
+						else:
+							raise
 				except:
 					self.download_queue.appendleft((url, saveto))
 					raise
@@ -222,7 +230,7 @@ def download_file(url, saveto, headers=None, progress_callback=None):
 		r = requests.get(url, stream = True, headers = headers)
 		if r:
 			if r.status_code == 304:
-				raise ThreadHTTPError(r.status_code, r.reason)
+				raise ThreadHTTPError(url, r.status_code, r.reason)
 
 			with open(saveto, 'wb') as f:
 				read = 0
@@ -253,7 +261,7 @@ def download_file(url, saveto, headers=None, progress_callback=None):
 
 			return r.headers
 		else:
-			raise ThreadHTTPError(r.status_code, r.reason)
+			raise ThreadHTTPError(url, r.status_code, r.reason)
 	except:
 		if os.path.isfile(saveto):
 			os.remove(saveto)

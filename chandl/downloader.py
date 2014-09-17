@@ -227,24 +227,32 @@ def download_file(url, saveto, headers=None, progress_callback=None):
 
 	# Attempt to download the new file
 	try:
-		r = requests.get(url, stream = True, headers = headers)
+		r = requests.get(url, stream=True, headers=headers)
 		if r:
 			if r.status_code == 304:
 				raise ThreadHTTPError(url, r.status_code, r.reason)
 
 			with open(saveto, 'wb') as f:
 				read = 0
-				size = int(r.headers['content-length']) if 'content-length' in r.headers else -1
 
+				if 'content-length' in r.headers:
+					size = int(r.headers['content-length'])
+				else:
+					size = -1
+
+				# Print initial progress report
 				progress(url, read, size)
 
 				try:
-					for chunk in r.iter_content(chunk_size = 1024):
+					# Iterate through the downloaded file content chunk by chunk and write it to file
+					for chunk in r.iter_content(chunk_size=1024):
 						if chunk:
 							f.write(chunk)
 							f.flush()
 
 							read += len(chunk)
+
+							# Report progress
 							progress(url, read, size)
 				except requests.RequestException as e:
 					logger.error("RequestException downloading [{0:s}]: {1:s}", url, str(e))

@@ -91,7 +91,7 @@ def main():
     global terminate
 
     # Parse commandline options
-    op = OptionParser(usage = "%prog [options] <thread url>", version = "%prog 0.1.0")
+    op = OptionParser(usage = "%prog [options] <thread url>", version = "Chandler v{0:s}".format(VERSION))
     op.add_option('-d', '--destination-path', dest = 'destpath', default = None,
         help = "specify output path")
     op.add_option('-o', '--output', dest = 'output', default = None,

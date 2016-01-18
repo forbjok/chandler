@@ -17,300 +17,300 @@ terminate = False
 tw, th = None, None
 
 def sigint_handler(signum, frame):
-	global terminate
-	terminate = True
+    global terminate
+    terminate = True
 
 def cancel_callback():
-	global terminate
-	return terminate
+    global terminate
+    return terminate
 
 def output(text):
-	clear_line()
-	print text
+    clear_line()
+    print text
 
 def clear_line():
-	if report.prev_length > 0:
-		sys.stdout.write("\r{0:s}\r".format(' ' * report.prev_length))
-		sys.stdout.flush()
+    if report.prev_length > 0:
+        sys.stdout.write("\r{0:s}\r".format(' ' * report.prev_length))
+        sys.stdout.flush()
 
-		report.prev_length = 0
+        report.prev_length = 0
 
 def report(text):
-	# If text is longer than terminal width, truncate it
-	text = text[:tw]
+    # If text is longer than terminal width, truncate it
+    text = text[:tw]
 
-	if len(text) < report.prev_length:
-		clear_line()
+    if len(text) < report.prev_length:
+        clear_line()
 
-	sys.stdout.write("\r{0:s}".format(text))
-	sys.stdout.flush()
+    sys.stdout.write("\r{0:s}".format(text))
+    sys.stdout.flush()
 
-	report.prev_length = len(text)
+    report.prev_length = len(text)
 
 report.prev_length = 0
 
 class ProcessAlreadyRunning(Exception):
-	pass
+    pass
 
 class PID(object):
-	def __init__(self, pidfile, ignore_pid = False):
-		if platform.system() == 'Windows':
-			logging.info("PID file not supported on Microsoft Windows.")
-			self.pidfile = None
-			return
+    def __init__(self, pidfile, ignore_pid = False):
+        if platform.system() == 'Windows':
+            logging.info("PID file not supported on Microsoft Windows.")
+            self.pidfile = None
+            return
 
-		if os.path.isfile(pidfile):
-			with open(pidfile) as f:
-				pid = int(f.read())
+        if os.path.isfile(pidfile):
+            with open(pidfile) as f:
+                pid = int(f.read())
 
-			try:
-				# Check if process is running
-				os.kill(pid, 0)
-				raise ProcessAlreadyRunning
-			except OSError:
-				pass
+            try:
+                # Check if process is running
+                os.kill(pid, 0)
+                raise ProcessAlreadyRunning
+            except OSError:
+                pass
 
-		self.pidfile = pidfile
+        self.pidfile = pidfile
 
-	def __enter__(self):
-		if self.pidfile == None:
-			return
+    def __enter__(self):
+        if self.pidfile == None:
+            return
 
-		with open(self.pidfile, 'w') as f:
-			f.write(str(os.getpid()))
+        with open(self.pidfile, 'w') as f:
+            f.write(str(os.getpid()))
 
-		return self
+        return self
 
-	def __exit__(self, exc_type, exc_value, traceback):
-		if self.pidfile == None:
-			return
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.pidfile == None:
+            return
 
-		os.remove(self.pidfile)
+        os.remove(self.pidfile)
 
 def main():
-	global terminate
+    global terminate
 
-	# Parse commandline options
-	op = OptionParser(usage = "%prog [options] <thread url>", version = "%prog 0.1.0")
-	op.add_option('-d', '--destination-path', dest = 'destpath', default = None,
-		help = "specify output path")
-	op.add_option('-o', '--output', dest = 'output', default = None,
-		help = "specify name of HTML file")
-	op.add_option('', '--no-subfolder', dest = 'no_subfolder', default = False, action = 'store_true',
-		help = "don't create a subfolder for each thread in the destination folder")
-	op.add_option('-c', '--continuous', dest = 'continuous', default = False, action = 'store_true',
-		help = "continuously re-download until 404 (will be ignored if multiple threads are specified)")
-	op.add_option('-i', '--interval', dest = 'interval', type = 'float', default = 30,
-		help = "number of seconds between checks (default: 30)")
-	op.add_option('', '--auto-increment', dest = 'auto_increment', type = 'float', default = 5,
-		help = "number of seconds to add per auto-increment (default: 5) (0 = disable)")
-	op.add_option('', '--max-auto-increment', dest = 'max_auto_increment', type = 'float', default = 90,
-		help = "maximum increase for auto-increment (default: 90)")
-	op.add_option('-r', '--retry', dest = 'retry', type = 'int', default = 10,
-		help = "number of times to retry (with increasing delay) on HTTP errors (excluding 404)")
-	op.add_option('', '--retry-increment', dest = 'retry_increment', type = 'int', default = 120,
-		help = "number of seconds to add for each failed check (default: 120)")
-	op.add_option('-f', '--force', dest = 'force', default = False, action = 'store_true',
-		help = "force re-download")
-	op.add_option('', '--include-ext', dest = 'include_extensions', default = '',
-		help = "semicolon-separated list of additional file extensions to download (ex: .js;.svg)")
-	op.add_option('', '--no-merge', dest = 'nomerge', default = False, action = 'store_true',
-		help = "force disable merging even if it is known to be supported for the site")
-	op.add_option('', '--force-merge', dest = 'force_merge', default = False, action = 'store_true',
-		help = "force enable merging even if the site is not known to be supported")
-	op.add_option('-t', '--board-type', dest = 'board_type', default = None,
-		help = "specify board type - should only be used for unsupported sites you know to be compatible with one of the existing board types (ie. any site using stock Tinyboard)")
-	op.add_option('', '--ignore-pid', dest = 'ignore_pid', default = False, action = 'store_true',
-		help = "ignore existing PID file. DO NOT USE THIS unless the PID checking somehow fails even though no process is running (ie. corrupt/invalid PID file)")
-	op.add_option('', '--progress', dest = 'progress', default = 'on',
-		help = "specify progress display mode (default: on)")
-	op.add_option('-v', '--verbose', dest = 'verbose', default = False, action = 'store_true',
-		help = "display more information on console")
-	op.add_option('', '--debug', dest = 'debug', default = False, action = 'store_true',
-		help = "display detailed debugging information")
+    # Parse commandline options
+    op = OptionParser(usage = "%prog [options] <thread url>", version = "%prog 0.1.0")
+    op.add_option('-d', '--destination-path', dest = 'destpath', default = None,
+        help = "specify output path")
+    op.add_option('-o', '--output', dest = 'output', default = None,
+        help = "specify name of HTML file")
+    op.add_option('', '--no-subfolder', dest = 'no_subfolder', default = False, action = 'store_true',
+        help = "don't create a subfolder for each thread in the destination folder")
+    op.add_option('-c', '--continuous', dest = 'continuous', default = False, action = 'store_true',
+        help = "continuously re-download until 404 (will be ignored if multiple threads are specified)")
+    op.add_option('-i', '--interval', dest = 'interval', type = 'float', default = 30,
+        help = "number of seconds between checks (default: 30)")
+    op.add_option('', '--auto-increment', dest = 'auto_increment', type = 'float', default = 5,
+        help = "number of seconds to add per auto-increment (default: 5) (0 = disable)")
+    op.add_option('', '--max-auto-increment', dest = 'max_auto_increment', type = 'float', default = 90,
+        help = "maximum increase for auto-increment (default: 90)")
+    op.add_option('-r', '--retry', dest = 'retry', type = 'int', default = 10,
+        help = "number of times to retry (with increasing delay) on HTTP errors (excluding 404)")
+    op.add_option('', '--retry-increment', dest = 'retry_increment', type = 'int', default = 120,
+        help = "number of seconds to add for each failed check (default: 120)")
+    op.add_option('-f', '--force', dest = 'force', default = False, action = 'store_true',
+        help = "force re-download")
+    op.add_option('', '--include-ext', dest = 'include_extensions', default = '',
+        help = "semicolon-separated list of additional file extensions to download (ex: .js;.svg)")
+    op.add_option('', '--no-merge', dest = 'nomerge', default = False, action = 'store_true',
+        help = "force disable merging even if it is known to be supported for the site")
+    op.add_option('', '--force-merge', dest = 'force_merge', default = False, action = 'store_true',
+        help = "force enable merging even if the site is not known to be supported")
+    op.add_option('-t', '--board-type', dest = 'board_type', default = None,
+        help = "specify board type - should only be used for unsupported sites you know to be compatible with one of the existing board types (ie. any site using stock Tinyboard)")
+    op.add_option('', '--ignore-pid', dest = 'ignore_pid', default = False, action = 'store_true',
+        help = "ignore existing PID file. DO NOT USE THIS unless the PID checking somehow fails even though no process is running (ie. corrupt/invalid PID file)")
+    op.add_option('', '--progress', dest = 'progress', default = 'on',
+        help = "specify progress display mode (default: on)")
+    op.add_option('-v', '--verbose', dest = 'verbose', default = False, action = 'store_true',
+        help = "display more information on console")
+    op.add_option('', '--debug', dest = 'debug', default = False, action = 'store_true',
+        help = "display detailed debugging information")
 
-	(opts, args) = op.parse_args()
+    (opts, args) = op.parse_args()
 
-	if len(args) < 1:
-		op.print_help()
-		return 1
+    if len(args) < 1:
+        op.print_help()
+        return 1
 
-	# Determine logging level based on commandline flags
-	if opts.debug:
-		level = logging.DEBUG
-	elif opts.verbose:
-		level = logging.INFO
-	else:
-		level = None
+    # Determine logging level based on commandline flags
+    if opts.debug:
+        level = logging.DEBUG
+    elif opts.verbose:
+        level = logging.INFO
+    else:
+        level = None
 
-	# Initialize logging
-	logging.basicConfig(level = level)
+    # Initialize logging
+    logging.basicConfig(level = level)
 
-	signal.signal(signal.SIGINT, sigint_handler)
+    signal.signal(signal.SIGINT, sigint_handler)
 
-	try:
-		# Attempt to set up detection of terminal size
-		import fcntl, termios, struct
+    try:
+        # Attempt to set up detection of terminal size
+        import fcntl, termios, struct
 
-		def get_terminal_size():
-			h, w, hp, wp = struct.unpack('HHHH', fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0)))
-			return w, h
+        def get_terminal_size():
+            h, w, hp, wp = struct.unpack('HHHH', fcntl.ioctl(sys.stdin.fileno(), termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0)))
+            return w, h
 
-		def refresh_terminal_size():
-			global tw, th
-			tw, th = get_terminal_size()
+        def refresh_terminal_size():
+            global tw, th
+            tw, th = get_terminal_size()
 
-		def sigwinch_handler(signum, frame):
-			refresh_terminal_size()
+        def sigwinch_handler(signum, frame):
+            refresh_terminal_size()
 
-		refresh_terminal_size()
-		signal.signal(signal.SIGWINCH, sigwinch_handler)
-	except:
-		# If terminal size detection fails, log but otherwise ignore it
-		# This will generally be caused by running on an operating system
-		# on which it is not supported, such as Microsoft Windows
-		logger.info("Terminal resize not supported.")
+        refresh_terminal_size()
+        signal.signal(signal.SIGWINCH, sigwinch_handler)
+    except:
+        # If terminal size detection fails, log but otherwise ignore it
+        # This will generally be caused by running on an operating system
+        # on which it is not supported, such as Microsoft Windows
+        logger.info("Terminal resize not supported.")
 
-	if opts.continuous and len(args) > 1:
-		output("More than one URL specified. Continuous flag will be ignored.")
-		opts.continuous = False
+    if opts.continuous and len(args) > 1:
+        output("More than one URL specified. Continuous flag will be ignored.")
+        opts.continuous = False
 
-	include_extensions = frozenset(opts.include_extensions.split(';'))
+    include_extensions = frozenset(opts.include_extensions.split(';'))
 
-	for url in args:
-		if terminate:
-			break
+    for url in args:
+        if terminate:
+            break
 
-		if opts.progress == 'on':
-			rotator = "-\|/"
-			def progress(prg, currentfile, filestotal, url):
-				if prg < 0:
-					prgtext = rotator[progress.rot]
-					progress.rot += 1
+        if opts.progress == 'on':
+            rotator = "-\|/"
+            def progress(prg, currentfile, filestotal, url):
+                if prg < 0:
+                    prgtext = rotator[progress.rot]
+                    progress.rot += 1
 
-					if progress.rot >= len(rotator):
-						progress.rot = 0
-				else:
-					prgtext = "{0: 3.0f}%".format(prg)
+                    if progress.rot >= len(rotator):
+                        progress.rot = 0
+                else:
+                    prgtext = "{0: 3.0f}%".format(prg)
 
-				report("[{0:s}] Downloading file {1:d} of {2:d} [{3:s}]".format(prgtext, currentfile, filestotal, url))
+                report("[{0:s}] Downloading file {1:d} of {2:d} [{3:s}]".format(prgtext, currentfile, filestotal, url))
 
-			progress.rot = 0
-		else:
-			progress = None
+            progress.rot = 0
+        else:
+            progress = None
 
-		# Create downloader instance
-		downloader = ThreadDownloader(url, None, None, output_callback = output, progress_callback = progress, cancel_callback = cancel_callback)
+        # Create downloader instance
+        downloader = ThreadDownloader(url, None, None, output_callback = output, progress_callback = progress, cancel_callback = cancel_callback)
 
-		# Set board type if specified
-		if opts.board_type != None:
-			downloader.set_board_type(opts.board_type)
+        # Set board type if specified
+        if opts.board_type != None:
+            downloader.set_board_type(opts.board_type)
 
-		# If the user specified a destination path, use that. Otherwise create a directory matching the thread number in the current working directory.
-		if opts.destpath != None:
-			saveto = opts.destpath
-		else:
-			saveto = os.getcwd()
+        # If the user specified a destination path, use that. Otherwise create a directory matching the thread number in the current working directory.
+        if opts.destpath != None:
+            saveto = opts.destpath
+        else:
+            saveto = os.getcwd()
 
-		downloader.set_destination(saveto, opts.output, no_subdir = opts.no_subfolder)
+        downloader.set_destination(saveto, opts.output, no_subdir = opts.no_subfolder)
 
-		if opts.nomerge:
-			downloader.merge = False
-		elif opts.force_merge:
-			downloader.merge = True
+        if opts.nomerge:
+            downloader.merge = False
+        elif opts.force_merge:
+            downloader.merge = True
 
-		# Add included extensions to downloader's list of extensions
-		downloader.download_extensions.update(include_extensions)
+        # Add included extensions to downloader's list of extensions
+        downloader.download_extensions.update(include_extensions)
 
-		try:
-			with PID(os.path.join(downloader.save_dir, 'chandler.pid'), ignore_pid = opts.ignore_pid):
-				run_downloader(downloader, opts)
-		except ProcessAlreadyRunning:
-			output("PID file exists and its process appears to be running. Terminating.")
+        try:
+            with PID(os.path.join(downloader.save_dir, 'chandler.pid'), ignore_pid = opts.ignore_pid):
+                run_downloader(downloader, opts)
+        except ProcessAlreadyRunning:
+            output("PID file exists and its process appears to be running. Terminating.")
 
-	return 0
+    return 0
 
 def run_downloader(downloader, opts):
-	global terminate
+    global terminate
 
-	url = downloader.thread_url
+    url = downloader.thread_url
 
-	# Define function for performing a download attempt
-	def checkthread():
-		report("Checking thread [{0:s}] for updates...".format(url))
+    # Define function for performing a download attempt
+    def checkthread():
+        report("Checking thread [{0:s}] for updates...".format(url))
 
-		try:
-			downloader.download(force = checkthread.force)
-			checkthread.checks_since_last_update = 0
-		except CancelException:
-			output("Download cancelled. Thread has not been saved.")
-			return False
-		except ThreadNotModified as e:
-			output(e)
-			checkthread.checks_since_last_update += 1
-		except ThreadNotFound as e:
-			output(e)
-			return False
-		except (ThreadHTTPError, ConnectionError, IncompleteDownload) as e:
-			output(e)
+        try:
+            downloader.download(force = checkthread.force)
+            checkthread.checks_since_last_update = 0
+        except CancelException:
+            output("Download cancelled. Thread has not been saved.")
+            return False
+        except ThreadNotModified as e:
+            output(e)
+            checkthread.checks_since_last_update += 1
+        except ThreadNotFound as e:
+            output(e)
+            return False
+        except (ThreadHTTPError, ConnectionError, IncompleteDownload) as e:
+            output(e)
 
-			if checkthread.retry < opts.retry:
-				checkthread.retry += 1
-				return True
+            if checkthread.retry < opts.retry:
+                checkthread.retry += 1
+                return True
 
-			return False
-		finally:
-			# Reset force after first run
-			checkthread.force = False
+            return False
+        finally:
+            # Reset force after first run
+            checkthread.force = False
 
-			# Set last checked time
-			checkthread.last_check = time.time()
+            # Set last checked time
+            checkthread.last_check = time.time()
 
-		# Check succeeded, reset retry count
-		checkthread.retry = 0
-		return True
+        # Check succeeded, reset retry count
+        checkthread.retry = 0
+        return True
 
-	# Set checkthread's force variable to the one specified by commandline (or false if unspecified)
-	# Doing it this way is necessary because it is not possible to set a variable in an outer scope from inside a nested function
-	checkthread.force = opts.force
-	checkthread.retry = 0
-	checkthread.last_check = None
-	checkthread.checks_since_last_update = 0
+    # Set checkthread's force variable to the one specified by commandline (or false if unspecified)
+    # Doing it this way is necessary because it is not possible to set a variable in an outer scope from inside a nested function
+    checkthread.force = opts.force
+    checkthread.retry = 0
+    checkthread.last_check = None
+    checkthread.checks_since_last_update = 0
 
-	if opts.continuous:
-		# Loop until a download attempt fails (or is canceled)
-		while not terminate:
-			# Check thread
-			if not checkthread():
-				break
+    if opts.continuous:
+        # Loop until a download attempt fails (or is canceled)
+        while not terminate:
+            # Check thread
+            if not checkthread():
+                break
 
-			if checkthread.retry == 0:
-				interval = opts.interval + min(opts.auto_increment * checkthread.checks_since_last_update, opts.max_auto_increment)
-			else:
-				interval = (opts.retry_increment * checkthread.retry)
+            if checkthread.retry == 0:
+                interval = opts.interval + min(opts.auto_increment * checkthread.checks_since_last_update, opts.max_auto_increment)
+            else:
+                interval = (opts.retry_increment * checkthread.retry)
 
-			while not terminate:
-				now = time.time()
-				elapsed = now - checkthread.last_check
-				remaining = interval - elapsed
+            while not terminate:
+                now = time.time()
+                elapsed = now - checkthread.last_check
+                remaining = interval - elapsed
 
-				if remaining < 0:
-					break
+                if remaining < 0:
+                    break
 
-				if checkthread.retry == 0:
-					report("Checking in {0:.0f}".format(remaining))
-				else:
-					report("Retrying ({1:d} of {2:d}) in {0:.0f}".format(remaining, checkthread.retry, opts.retry))
+                if checkthread.retry == 0:
+                    report("Checking in {0:.0f}".format(remaining))
+                else:
+                    report("Retrying ({1:d} of {2:d}) in {0:.0f}".format(remaining, checkthread.retry, opts.retry))
 
-				try:
-					time.sleep(1)
-				except IOError:
-					# User pressed CTRL-C, break loop
-					output("User pressed CTRL-C. Terminating.")
-					break
-	else:
-		# Just run download once
-		checkthread()
+                try:
+                    time.sleep(1)
+                except IOError:
+                    # User pressed CTRL-C, break loop
+                    output("User pressed CTRL-C. Terminating.")
+                    break
+    else:
+        # Just run download once
+        checkthread()
 
 if __name__ == '__main__':
-	sys.exit(main())
+    sys.exit(main())
